@@ -1,0 +1,16 @@
+make
+gdb ./exe
+break myLinkedListDeleteAtIndex
+run
+layout src
+n
+
+
+
+
+disp *traverse
+disp *traverse->prev
+disp *traverse->next
+disp *traverse->prev->next
+disp *traverse->next->prev
+n
