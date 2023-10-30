@@ -53,18 +53,20 @@ void Add(LinkedList *obj,void *item, int type,bool dynamic,unsigned long long le
 
 
 void Delete(LinkedList *obj,unsigned long long index) {
-    if (obj->length - 1 <= index)
+    Node *temp = obj->head;
+    for (int i = 0; i <= index; ++i,temp = temp->next)
     {
-        if (index > obj->length / 2)
+        if (i == index)
         {
-            
+            temp->prev->next = temp->next;
+            temp->next->prev = temp->prev;
+            free(temp);
         }
     }
 }
 
 void *Get(LinkedList *obj,unsigned long long index) {
     if (index > obj->length) return NULL;
-
 
     int start;
     if (index > obj->length / 2)
@@ -110,10 +112,11 @@ unsigned long long length(LinkedList *obj) {
 }
 
 void Free(LinkedList *obj) {
-    for (Node *traverse = obj->head;traverse;traverse = traverse->next) {
+    for (Node *traverse = obj->head,*curr = NULL;traverse;traverse = curr) {
         if (traverse->dynamic)
         {
-            free()
+            curr = traverse->next;
+            free(traverse);
         }
     }
 }
