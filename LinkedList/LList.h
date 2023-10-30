@@ -8,7 +8,7 @@ void Add(LinkedList *obj,void *item, int type,bool dynamic,unsigned long long le
 
 void Delete(LinkedList *obj,unsigned long long index);
 
-void *Get(LinkedList *obj,unsigned long long index);
+void *Get(LinkedList *obj,const unsigned long long index);
 
 unsigned long long length(LinkedList *obj);
 

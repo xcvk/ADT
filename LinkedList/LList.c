@@ -2,14 +2,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+// only support non struct types
 typedef struct Node {
     struct Node *next;
     struct Node *prev;
     void *value;
     int type;
 
-    bool dynamic;
-    unsigned long long n_length;
 } Node;
 
 typedef struct LinkedList {
@@ -28,15 +27,13 @@ LinkedList *Create(void) {
     return obj;
 }
 
-void Add(LinkedList *obj,void *item, int type,bool dynamic,unsigned long long length) {
+void Add(LinkedList *obj,void *item, int type,unsigned long long location) {
     Node *block = malloc(sizeof(Node));
     block->next = NULL;
     block->prev = NULL;
     block->type = type;
     block->value = item;
 
-    block->dynamic = false;
-    block->n_length = 0;
     if (!obj->head)
     {
         obj->head = block;
@@ -44,9 +41,29 @@ void Add(LinkedList *obj,void *item, int type,bool dynamic,unsigned long long le
     }
     else
     {
-        obj->head->prev = block;
-        block->next = obj->head;
-        obj->head = block;
+        unsigned long long start = 0;
+        for (Node *traverse = obj->head; start <= location; traverse = traverse->next, start++)
+        {
+            if (start == location || start == location - 1)
+            {
+                if (traverse && start == location)
+                {
+                    block->next = traverse;
+                    block->prev = traverse->prev;
+                    traverse->prev->next = block;
+                    traverse->prev = block;
+                }
+                else
+                {
+                    if (start == location - 1 && !traverse->next)
+                    {
+                        traverse->next = block;
+                        block->prev = traverse;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -54,7 +71,7 @@ void Add(LinkedList *obj,void *item, int type,bool dynamic,unsigned long long le
 
 void Delete(LinkedList *obj,unsigned long long index) {
     Node *temp = obj->head;
-    for (int i = 0; i <= index; ++i,temp = temp->next)
+    for (unsigned long long i = 0; i <= index; ++i,temp = temp->next)
     {
         if (i == index)
         {
@@ -65,43 +82,16 @@ void Delete(LinkedList *obj,unsigned long long index) {
     }
 }
 
-void *Get(LinkedList *obj,unsigned long long index) {
+void *Get(LinkedList *obj,const unsigned long long index) {
     if (index > obj->length) return NULL;
 
-    int start;
-    if (index > obj->length / 2)
+    int start = 0;
+    
+    for (Node *traverse = obj->head; start <= index; ++start, traverse = traverse->next)
     {
-        start = obj->length;
-        for (Node *traverse = obj->tail; start != index - 1;traverse = traverse->prev,start--)
+        if (index == start)
         {
-            if (index == start)
-            {
-                int type = get_type(traverse->type);
-                if (type == 0)
-                {
-                    
-                }
-            }
-        }
-    }
-    else
-    {
-        start = obj->length;
-        for (Node *traverse = obj->head; start != index + 1;traverse = traverse->prev,start++)
-        {
-            if (index == start)
-            {
-                if (traverse->type == sizeof(unsigned long long))
-                {
-                    unsigned long long *p = traverse->value;
-                    return p;
-                }
-                else
-                {
-                    char *string = traverse->value;
-                    return string;
-                }
-            }
+            return traverse->value;
         }
     }
 
@@ -112,11 +102,9 @@ unsigned long long length(LinkedList *obj) {
 }
 
 void Free(LinkedList *obj) {
-    for (Node *traverse = obj->head,*curr = NULL;traverse;traverse = curr) {
-        if (traverse->dynamic)
-        {
-            curr = traverse->next;
-            free(traverse);
-        }
+    for (Node *traverse = obj->head,*curr = NULL;traverse;traverse = curr) 
+    {
+        curr = traverse->next;
+        free(traverse);
     }
 }
